@@ -56,7 +56,7 @@ def contar_quasilineas_proximaJugada(tablero, simbolo):
     contador_filas = 0
     contador_columnas = 0
     contador_diagonales = 0
-    tablero_actual = tablero
+    tablero_actual = copy.deepcopy(tablero)
 
     #colocar un 'O' en cada espacio vacio para la proxima jugada y contar las quasilineas
     for i in range(3):
@@ -84,12 +84,11 @@ def contar_quasilineas_proximaJugada(tablero, simbolo):
                
                 #reinizalizar el tablero
                 tablero[i][j] = ' '
-                tablero = tablero_actual
+                tablero = copy.deepcopy(tablero_actual)
 
     ind7_8 = contador_filas + contador_columnas + contador_diagonales
 
     return ind7_8
-
    
 
 def contar_esquinas(tablero, simbolo):
@@ -147,16 +146,6 @@ def contar_quasilineas(tablero):
 """
 
 def evaluar_tablero(tablero, simboloOrdenador, simboloHumano):
-    # Calcula los indicadores
-    ind1 = contar_quasilineas(tablero, simboloOrdenador) # ind1 para quasilineas de jugador Ordenador
-    ind2 = contar_quasilineas(tablero, simboloHumano) # ind2 para quasilineas de jugador Humano
-    ind3 = contar_esquinas(tablero, simboloOrdenador) #ind3 para esquinas de jugador Ordenador 
-    ind4 = contar_esquinas(tablero, simboloHumano) #ind4 para esquinas de jugador Humano
-    ind5 = sum([fila.count(simboloOrdenador) for fila in tablero]) #ind5 para contar simbolos de jugador Ordenador 
-    ind6 = sum([fila.count(simboloHumano) for fila in tablero]) #ind6 para contar simbolos de jugador Humano
-    ind7 = contar_quasilineas_proximaJugada(tablero, simboloOrdenador) #ind7 para quasilineas de jugador Ordenador en la proxima jugada
-    ind8 = contar_quasilineas_proximaJugada(tablero, simboloHumano) #ind8 para quasilineas de jugador Humano en la proxima jugada
-    
     if es_ganador(tablero, simboloOrdenador):
         ind9 = 100000000000000000
         # print("Gana Ordenador")
@@ -169,6 +158,16 @@ def evaluar_tablero(tablero, simboloOrdenador, simboloHumano):
     else:
         ind9 = 1
         # iniciarJuego(tablero, simboloOrdenador, simboloHumano, True)
+    # Calcula los indicadores
+    ind1 = contar_quasilineas(tablero, simboloOrdenador) # ind1 para quasilineas de jugador Ordenador
+    ind2 = contar_quasilineas(tablero, simboloHumano) # ind2 para quasilineas de jugador Humano
+    ind3 = contar_esquinas(tablero, simboloOrdenador) #ind3 para esquinas de jugador Ordenador 
+    ind4 = contar_esquinas(tablero, simboloHumano) #ind4 para esquinas de jugador Humano
+    ind5 = sum([fila.count(simboloOrdenador) for fila in tablero]) #ind5 para contar simbolos de jugador Ordenador 
+    ind6 = sum([fila.count(simboloHumano) for fila in tablero]) #ind6 para contar simbolos de jugador Humano
+    ind7 = contar_quasilineas_proximaJugada(tablero, simboloOrdenador) #ind7 para quasilineas de jugador Ordenador en la proxima jugada
+    ind8 = contar_quasilineas_proximaJugada(tablero, simboloHumano) #ind8 para quasilineas de jugador Humano en la proxima jugada
+    
 
     # Coeficientes
     W1, W2, W3, W4, W5, W6, W7, W8, W9 = 5, -5, 3, -3, 1, -1, 4, -4, ind9
@@ -183,25 +182,20 @@ def evaluar_tablero(tablero, simboloOrdenador, simboloHumano):
 
 def minimax(tablero, depth, isMaximizing, simboloOrdenador, simboloHumano):
     score = evaluar_tablero(tablero, simboloOrdenador, simboloHumano)
-    tablero_actual = tablero
+    
     # Base Cases
-    if score >= 100000000000000000:  
+    if abs(score) == 100000000000000000 or depth == 9:  # Si hay un ganador o el tablero está lleno, retornamos la puntuación
         return score
-    if score <= -100000000000000000:  
-        return score
-    if not hayMovimientos(tablero):  
-        return 0
 
     if isMaximizing:
         maxEval = float('-inf')
         for i in range(3):
             for j in range(3):
                 if tablero[i][j] == ' ':
-                    tablero[i][j] = simboloOrdenador
-                    eval = minimax(tablero, depth + 1, False, simboloOrdenador, simboloHumano)
+                    tempTablero = [row.copy() for row in tablero]  # Creamos una copia del tablero para no modificar el original
+                    tempTablero[i][j] = simboloOrdenador
+                    eval = minimax(tempTablero, depth + 1, False, simboloOrdenador, simboloHumano)
                     maxEval = max(maxEval, eval)
-                    tablero[i][j] = ' '
-                    tablero = tablero_actual
         return maxEval
 
     else:
@@ -209,11 +203,10 @@ def minimax(tablero, depth, isMaximizing, simboloOrdenador, simboloHumano):
         for i in range(3):
             for j in range(3):
                 if tablero[i][j] == ' ':
-                    tablero[i][j] = simboloHumano
-                    eval = minimax(tablero, depth + 1, True, simboloOrdenador, simboloHumano)
+                    tempTablero = [row.copy() for row in tablero]  # Creamos una copia del tablero para no modificar el original
+                    tempTablero[i][j] = simboloHumano
+                    eval = minimax(tempTablero, depth + 1, True, simboloOrdenador, simboloHumano)
                     minEval = min(minEval, eval)
-                    tablero[i][j] = ' '
-                    tablero = tablero_actual
         return minEval
 
 def hayMovimientos(tablero):
