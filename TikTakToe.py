@@ -266,30 +266,32 @@ def main():
     imprimir_formato(tableroJuego)
     
     while hayMovimientos(tableroJuego):
-        # Jugada del humano
+    # Jugada del humano
         for i in range(9):
             print("Turno: ", i)
             if i % 2 == 0: # Turno del humano
-                fila = int(input("Ingresa la fila (0, 1, 2): "))
-                columna = int(input("Ingresa la columna (0, 1, 2): "))
-                while tableroJuego[fila][columna] != ' ':
-                    print("Esa posición ya está ocupada. Intenta de nuevo.")
-                    fila = int(input("Ingresa la fila (0, 1, 2): "))
-                    columna = int(input("Ingresa la columna (0, 1, 2): "))
-                tableroJuego[fila][columna] = simboloHumano
+                while True:
+                    try:
+                        fila = int(input("Ingresa la fila (0, 1, 2): "))
+                        columna = int(input("Ingresa la columna (0, 1, 2): "))
 
+                        # Validar que la posición ingresada es válida y no está ocupada
+                        if fila in [0, 1, 2] and columna in [0, 1, 2] and tableroJuego[fila][columna] == ' ':
+                            break  # Salimos del bucle cuando el usuario ingresa valores válidos
+                        else:
+                            if fila not in [0, 1, 2] or columna not in [0, 1, 2]:
+                                print("Valor fuera de rango. Por favor, ingresa valores entre 0 y 2.")
+                            else:
+                                print("Esa posición ya está ocupada. Intenta de nuevo.")
+                    except ValueError:
+                        print("Por favor, ingresa un número válido.")
+
+                tableroJuego[fila][columna] = simboloHumano
                 imprimir_formato(tableroJuego)
                 tablero_actual = tableroJuego
                 # Verificar si el humano ganó
                 if es_ganador(tableroJuego, simboloHumano):
                     print("¡Felicidades, ganaste!")
-                    return
-                
-            else: #turno de la computadora
-        
-                # Verificar si hay empate
-                if not hayMovimientos(tableroJuego):
-                    print("Empate.")
                     return
         
                 # Jugada de la computadora
