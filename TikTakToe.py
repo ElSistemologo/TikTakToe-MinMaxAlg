@@ -1,3 +1,6 @@
+import copy
+
+
 def crear_tablero():
 # Esta funcion crea un tablero vacio
     print("Este es el tablero inicial: ")
@@ -53,7 +56,7 @@ def contar_quasilineas_proximaJugada(tablero, simbolo):
     contador_filas = 0
     contador_columnas = 0
     contador_diagonales = 0
-
+    tablero_actual = tablero
 
     #colocar un 'O' en cada espacio vacio para la proxima jugada y contar las quasilineas
     for i in range(3):
@@ -81,7 +84,8 @@ def contar_quasilineas_proximaJugada(tablero, simbolo):
                
                 #reinizalizar el tablero
                 tablero[i][j] = ' '
-    
+                tablero = tablero_actual
+
     ind7_8 = contador_filas + contador_columnas + contador_diagonales
 
     return ind7_8
@@ -155,13 +159,13 @@ def evaluar_tablero(tablero, simboloOrdenador, simboloHumano):
     
     if es_ganador(tablero, simboloOrdenador):
         ind9 = 100000000000000000
-        print("Gana Ordenador")
+        # print("Gana Ordenador")
     elif es_ganador(tablero, simboloHumano):
         ind9 = -100000000000000000
-        print("Gana Humano")
+        # print("Gana Humano")
     elif not hayMovimientos(tablero):
         ind9 = 0
-        print("Empate")
+        # print("Empate")
     else:
         ind9 = 1
         # iniciarJuego(tablero, simboloOrdenador, simboloHumano, True)
@@ -179,7 +183,7 @@ def evaluar_tablero(tablero, simboloOrdenador, simboloHumano):
 
 def minimax(tablero, depth, isMaximizing, simboloOrdenador, simboloHumano):
     score = evaluar_tablero(tablero, simboloOrdenador, simboloHumano)
-
+    tablero_actual = tablero
     # Base Cases
     if score >= 100000000000000000:  
         return score
@@ -197,6 +201,7 @@ def minimax(tablero, depth, isMaximizing, simboloOrdenador, simboloHumano):
                     eval = minimax(tablero, depth + 1, False, simboloOrdenador, simboloHumano)
                     maxEval = max(maxEval, eval)
                     tablero[i][j] = ' '
+                    tablero = tablero_actual
         return maxEval
 
     else:
@@ -208,6 +213,7 @@ def minimax(tablero, depth, isMaximizing, simboloOrdenador, simboloHumano):
                     eval = minimax(tablero, depth + 1, True, simboloOrdenador, simboloHumano)
                     minEval = min(minEval, eval)
                     tablero[i][j] = ' '
+                    tablero = tablero_actual
         return minEval
 
 def hayMovimientos(tablero):
@@ -220,14 +226,14 @@ def hayMovimientos(tablero):
 def encontrar_mejor_jugada(tablero, simboloOrdenador, simboloHumano):
     mejor_valor = -float('inf')
     mejor_movimiento = (-1, -1)
-
+    tablero_actual =  tablero
     for i in range(3):
         for j in range(3):
             if tablero[i][j] == ' ':
                 tablero[i][j] = simboloOrdenador
                 valor_movimiento = minimax(tablero, 0, False, simboloOrdenador, simboloHumano)  # Corrección aquí
                 tablero[i][j] = ' '
-                
+                tablero = tablero_actual
                 if valor_movimiento > mejor_valor:
                     mejor_movimiento = (i, j)
                     mejor_valor = valor_movimiento
@@ -264,61 +270,61 @@ def jugador_humano():
 
 #iniciar juego
 
-def iniciarJuego(tablero, simboloOrdenador, simboloHumano, turno):
-    while True:  # Ciclo principal del juego
-        imprimir_formato(tablero)
-        
-        # Comprobamos si el juego ha terminado antes del siguiente movimiento
-        if es_ganador(tablero, simboloHumano):
-            print("¡Ganaste!")
-            return
-        elif es_ganador(tablero, simboloOrdenador):
-            print("¡Gana la computadora!")
-            return
-        elif not hayMovimientos(tablero):
-            print("¡Es un empate!")
-            return
-
-        # Movimiento del jugador
-        if turno:
-            fila = int(input("Jugador, elige la fila (0, 1, 2): "))
-            columna = int(input("Jugador, elige la columna (0, 1, 2): "))
-
-            # Asegurarse de que la posición seleccionada esté vacía
-            while tablero[fila][columna] != ' ':
-                print("La celda ya está ocupada. Elije otra.")
-                fila = int(input("Jugador, elige la fila (0, 1, 2): "))
-                columna = int(input("Jugador, elige la columna (0, 1, 2): "))
-
-            tablero[fila][columna] = simboloHumano
-            turno = not turno
-
-        # Movimiento del ordenador
-        else:
-            mejor_movimiento = encontrar_mejor_jugada(tablero, simboloOrdenador, simboloHumano)
-            tablero[mejor_movimiento[0]][mejor_movimiento[1]] = simboloOrdenador
-            turno = not turno
-
-    # Si el tablero está lleno y no hay un ganador, es un empate
-    print("¡Es un empate!")
 
 def main():
-# Funcion main
-    intro()
-    tablero = crear_tablero()
-    imprimir_formato(tablero)
+    tableroJuego = crear_tablero()
+    imprimir_formato(tableroJuego)
     
+    while hayMovimientos(tableroJuego):
+        # Jugada del humano
+        for i in range(9):
+            print("Turno: ", i)
+            if i % 2 == 0: # Turno del humano
+                fila = int(input("Ingresa la fila (0, 1, 2): "))
+                columna = int(input("Ingresa la columna (0, 1, 2): "))
+                while tableroJuego[fila][columna] != ' ':
+                    print("Esa posición ya está ocupada. Intenta de nuevo.")
+                    fila = int(input("Ingresa la fila (0, 1, 2): "))
+                    columna = int(input("Ingresa la columna (0, 1, 2): "))
+                tableroJuego[fila][columna] = simboloHumano
+
+                imprimir_formato(tableroJuego)
+                tablero_actual = tableroJuego
+                # Verificar si el humano ganó
+                if es_ganador(tableroJuego, simboloHumano):
+                    print("¡Felicidades, ganaste!")
+                    return
+                
+            else: #turno de la computadora
+        
+                # Verificar si hay empate
+                if not hayMovimientos(tableroJuego):
+                    print("Empate.")
+                    return
+        
+                # Jugada de la computadora
+                i, j = encontrar_mejor_jugada(tableroJuego, simboloOrdenador, simboloHumano)
+                tableroJuego[i][j] = simboloOrdenador
+                
+                imprimir_formato(tableroJuego)
+
+                # Verificar si la computadora ganó
+                if es_ganador(tableroJuego, simboloOrdenador):
+                    print("La computadora gana.")
+                    return
+
+if __name__ == "__main__":
+    intro()
     simboloHumano = jugador_humano()
     simboloOrdenador = 'O' if simboloHumano == 'X' else 'X'
-    
-    # Preguntar al jugador humano si quiere empezar
-    respuesta = input("¿Quieres empezar el juego? (si/no): ").lower()
-    turno = True if respuesta == 'si' else False
-    
-    iniciarJuego(tablero, simboloOrdenador, simboloHumano, turno)
-
-if __name__ == '__main__':
     main()
+
+
+
+
+
+
+
 
 
 
