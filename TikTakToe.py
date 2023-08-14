@@ -52,39 +52,35 @@ def contar_quasilineas(tablero, simbolo):
     return ind1_2
 
 #contar filas, columnas y diagonales con 2 elemento y 1 espacios (proximas a ganar) para la siguiente jugada de 'O', retorna 2 valores ind1 para quasilineas de 0 e ind2 para quasilineas de X
-def contar_quasilineas_proximaJugada(tablero, simbolo):
+def contar_quasilineas_proximaJugada(tablero_original, simbolo):
     contador_filas = 0
     contador_columnas = 0
     contador_diagonales = 0
-    tablero_actual = copy.deepcopy(tablero)
 
-    #colocar un 'O' en cada espacio vacio para la proxima jugada y contar las quasilineas
+    # Colocar un 'O' o 'X' en cada espacio vacío para la próxima jugada y contar las quasilineas
     for i in range(3):
         for j in range(3):
+            tablero = copy.deepcopy(tablero_original)  # Creamos una copia del tablero original al inicio de cada iteración
             if tablero[i][j] == ' ':
                 tablero[i][j] = simbolo
-                #contar filas con 2 'O' o 'X' y 1 espacio vacio
+                # contar filas con 2 'O' o 'X' y 1 espacio vacío
                 for fila in tablero:
                     if fila.count(simbolo) == 2 and fila.count(' ') == 1:
                         contador_filas += 1
                     
-                #contar columnas con 2 'O' o 'X' y 1 espacio vacio
-                for i in range(3):
-                    columna = [tablero[0][i], tablero[1][i], tablero[2][i]]
+                # contar columnas con 2 'O' o 'X' y 1 espacio vacío
+                for k in range(3):
+                    columna = [tablero[0][k], tablero[1][k], tablero[2][k]]
                     if columna.count(simbolo) == 2 and columna.count(' ') == 1:
                         contador_columnas += 1
                     
-                #contar diagonales con 2 'O' o 'X' y 1 espacio vacio
+                # contar diagonales con 2 'O' o 'X' y 1 espacio vacío
                 diagonal1 = [tablero[0][0], tablero[1][1], tablero[2][2]]
                 diagonal2 = [tablero[0][2], tablero[1][1], tablero[2][0]]
                 if diagonal1.count(simbolo) == 2 and diagonal1.count(' ') == 1:
                     contador_diagonales += 1 
                 if diagonal2.count(simbolo) == 2 and diagonal2.count(' ') == 1:
                     contador_diagonales += 1
-               
-                #reinizalizar el tablero
-                tablero[i][j] = ' '
-                tablero = copy.deepcopy(tablero_actual)
 
     ind7_8 = contador_filas + contador_columnas + contador_diagonales
 
@@ -188,7 +184,7 @@ def minimax(tablero, depth, isMaximizing, simboloOrdenador, simboloHumano):
         return score
 
     if isMaximizing:
-        maxEval = float('-inf')
+        maxEval = float('-inf') # Inicializamos la evaluación con un valor muy pequeño
         for i in range(3):
             for j in range(3):
                 if tablero[i][j] == ' ':
@@ -199,7 +195,7 @@ def minimax(tablero, depth, isMaximizing, simboloOrdenador, simboloHumano):
         return maxEval
 
     else:
-        minEval = float('inf')
+        minEval = float('inf') # Inicializamos la evaluación con un valor muy grande
         for i in range(3):
             for j in range(3):
                 if tablero[i][j] == ' ':
@@ -217,21 +213,22 @@ def hayMovimientos(tablero):
     return False
 
 def encontrar_mejor_jugada(tablero, simboloOrdenador, simboloHumano):
-    mejor_valor = -float('inf')
-    mejor_movimiento = (-1, -1)
-    tablero_actual =  tablero
+    maxScore = float('-inf')
+    move = (-1, -1)
+    
     for i in range(3):
         for j in range(3):
             if tablero[i][j] == ' ':
-                tablero[i][j] = simboloOrdenador
-                valor_movimiento = minimax(tablero, 0, False, simboloOrdenador, simboloHumano)  # Corrección aquí
-                tablero[i][j] = ' '
-                tablero = tablero_actual
-                if valor_movimiento > mejor_valor:
-                    mejor_movimiento = (i, j)
-                    mejor_valor = valor_movimiento
+                tempTablero = [row.copy() for row in tablero]  # Creamos una copia del tablero
+                tempTablero[i][j] = simboloOrdenador
+                score = minimax(tempTablero, 0, False, simboloOrdenador, simboloHumano)
+                # Ya no es necesario "deshacer" el movimiento en el tablero original porque trabajamos con una copia
+                if score > maxScore:
+                    maxScore = score
+                    move = (i, j)
 
-    return mejor_movimiento
+    return move
+
 
 
 def intro():
