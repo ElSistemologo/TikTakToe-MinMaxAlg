@@ -176,35 +176,38 @@ def evaluar_tablero(tablero, simboloOrdenador, simboloHumano):
 
 
 
-def minimax(tablero_original, depth, isMaximizing, simboloOrdenador, simboloHumano):
-    score = evaluar_tablero(tablero_original, simboloOrdenador, simboloHumano)
+def minimax(tablero, depth, isMaximizing, alfa, beta, simboloOrdenador, simboloHumano):
+    score = evaluar_tablero(tablero, simboloOrdenador, simboloHumano)
     
-    # Base Cases
-    if abs(score) == 100000000000000000 or depth == 9:  # Si hay un ganador o el tablero está lleno, retornamos la puntuación
+    if abs(score) == 100000000000000000 or depth == 9:
         return score
 
     if isMaximizing:
-        maxEval = float('-inf') # Inicializamos la evaluación con un valor muy pequeño
+        maxEval = float('-inf')
         for i in range(3):
             for j in range(3):
-                tablero = copy.deepcopy(tablero_original)  # Creamos una copia del tablero original al inicio de cada iteración
                 if tablero[i][j] == ' ':
-                    tempTablero = [row.copy() for row in tablero]  # Creamos una copia del tablero para no modificar el original
-                    # tablero = copy.deepcopy(tablero_original)
+                    tempTablero = [row.copy() for row in tablero]
                     tempTablero[i][j] = simboloOrdenador
-                    eval = minimax(tempTablero, depth + 1, False, simboloOrdenador, simboloHumano)
+                    eval = minimax(tempTablero, depth + 1, False, alfa, beta, simboloOrdenador, simboloHumano)
                     maxEval = max(maxEval, eval)
+                    alfa = max(alfa, eval)  # Actualizamos el valor de alfa
+                    if beta <= alfa:  # Poda
+                        break
         return maxEval
 
     else:
-        minEval = float('inf') # Inicializamos la evaluación con un valor muy grande
+        minEval = float('inf')
         for i in range(3):
             for j in range(3):
                 if tablero[i][j] == ' ':
-                    tempTablero = [row.copy() for row in tablero]  # Creamos una copia del tablero para no modificar el original
+                    tempTablero = [row.copy() for row in tablero]
                     tempTablero[i][j] = simboloHumano
-                    eval = minimax(tempTablero, depth + 1, True, simboloOrdenador, simboloHumano)
+                    eval = minimax(tempTablero, depth + 1, True, alfa, beta, simboloOrdenador, simboloHumano)
                     minEval = min(minEval, eval)
+                    beta = min(beta, eval)  # Actualizamos el valor de beta
+                    if beta <= alfa:  # Poda
+                        break
         return minEval
 
 def hayMovimientos(tablero):
@@ -218,13 +221,15 @@ def encontrar_mejor_jugada(tablero, simboloOrdenador, simboloHumano):
     maxScore = float('-inf')
     move = (-1, -1)
     
+    alfa = float('-inf')
+    beta = float('inf')
+    
     for i in range(3):
         for j in range(3):
             if tablero[i][j] == ' ':
-                tempTablero = [row.copy() for row in tablero]  # Creamos una copia del tablero
+                tempTablero = [row.copy() for row in tablero]
                 tempTablero[i][j] = simboloOrdenador
-                score = minimax(tempTablero, 0, False, simboloOrdenador, simboloHumano)
-                # Ya no es necesario "deshacer" el movimiento en el tablero original porque trabajamos con una copia
+                score = minimax(tempTablero, 0, False, alfa, beta, simboloOrdenador, simboloHumano)
                 if score > maxScore:
                     maxScore = score
                     move = (i, j)
